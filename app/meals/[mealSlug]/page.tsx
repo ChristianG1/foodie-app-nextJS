@@ -1,14 +1,56 @@
+import { getMeal } from "@/lib/meals"
+import Image from "next/image"
+import { notFound } from "next/navigation"
+import classes from "./page.module.css"
+
 type Props = {
   params: {
     mealSlug: string
   }
 }
 
+type MealProps = {
+  id: number
+  slug: string
+  title: string
+  image: string
+  summary: string
+  instructions: string
+  creator: string
+  creator_email: string
+}
+
 export default function MealDetailsPage({ params }: Props) {
+  const meal = getMeal(params.mealSlug) as MealProps
+
+  if (!meal) {
+    notFound()
+  }
+
+  meal.instructions = meal.instructions.replace(/\n/g, "<br />")
+
   return (
-    <main>
-      <h2>Meal individual here</h2>
-      <p>{params?.mealSlug}</p>
-    </main>
+    <>
+      <header className={classes.header}>
+        <div className={classes.image}>
+          <Image src={meal.image} fill alt={meal.title} />
+        </div>
+        <div className={classes.headerText}>
+          <h1>{meal.title}</h1>
+          <p className={classes.creator}>
+            by <a href={`mailto:${meal.creator_email}`}>{meal.creator}</a>
+          </p>
+          <p className={classes.summary}>{meal.summary}</p>
+        </div>
+      </header>
+      <main>
+        <p
+          className={classes.instructions}
+          dangerouslySetInnerHTML={{
+            __html: meal.instructions,
+          }}
+        ></p>
+      </main>
+    </>
   )
 }
